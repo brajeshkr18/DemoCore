@@ -1,11 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using SampleAPI.Entities;
 using SampleAPI.Manager;
+using SampleAPI.Mappings;
+using SampleAPI.Middlewares;
 using SampleAPI.Repositories;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
+var logger = new LoggerConfiguration().
+    WriteTo.Console().
+    WriteTo.File("Logs/SampleApi.txt", rollingInterval: RollingInterval.Day).
+    MinimumLevel.Warning().CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -21,6 +34,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Custom Middleware for global exception Handling.
+app.UseMiddleware<CustomExceptionHandlerMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using SampleAPI.Entities;
 using SampleAPI.Manager;
+using SampleAPI.Mappings;
 using SampleAPI.Requests;
 using System.Security.Claims;
 
@@ -11,11 +13,14 @@ namespace SampleAPI.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderManager _orderManager;
+        private readonly IMapper _autoMapperProfiles;
+
         // Add more dependencies as needed.
 
-        public OrdersController(IOrderManager orderManager)
+        public OrdersController(IOrderManager orderManager, IMapper autoMapperProfiles)
         {
             _orderManager = orderManager;
+            this._autoMapperProfiles = autoMapperProfiles;
         }
 
         [HttpGet("GetAllActiveOrders")] // TODO: Change route, if needed.
@@ -38,20 +43,13 @@ namespace SampleAPI.Controllers
 
         [HttpPost]
         [Route("CreateOrder")]
-        public IActionResult Create([FromBody] Order order)
+        public IActionResult Create([FromBody] CreateOrderRequest orderRequest)
         {
-            
-            order.CreatedBy = 1; //TODO Need to implement Authentication // Convert.ToInt32(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            order.CreatedDate = DateTime.UtcNow;
-            try
-            {
-                _orderManager.AddOrder(order);
-                return StatusCode(StatusCodes.Status200OK, order);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            //TODO Need to implement Authentication //Convert.ToInt32(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+            orderRequest.CreatedBy = 1; 
+            var orderDomainModel = _autoMapperProfiles.Map<Order>(orderRequest);
+            _orderManager.AddOrder(orderDomainModel);
+            return Ok(_autoMapperProfiles.Map<CreateOrderRequest>(orderDomainModel));
         }
 
         #endregion

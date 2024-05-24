@@ -10,39 +10,38 @@ namespace SampleAPI.Repositories
         {
             _context = context;
         }
-        public List<Order> GetAllActiveOrders()
+        public async Task<List<Order>> GetAllActiveOrders()
         {
-            return _context.Orders.AsNoTracking().Where(x=>!x.IsDeleted)
-                .OrderByDescending(x => x.CreatedDate).ToList();
+            return await _context.Orders.AsNoTracking().Where(x => !x.IsDeleted)
+                .OrderByDescending(x => x.CreatedDate).ToListAsync();
         }
-        public List<Order> GetRecentOrders()
+        public async Task<List<Order>> GetRecentOrders()
         {
-            var currentDate=DateTime.Now.Date;
-            return _context.Orders.AsNoTracking().
-                Where(x => !x.IsDeleted && x.CreatedDate.Date==currentDate)
-               .OrderByDescending(x => x.CreatedDate).ToList();
+            var currentDate = DateTime.Now.Date;
+            return await _context.Orders.AsNoTracking().
+                Where(x => !x.IsDeleted && x.CreatedDate.Date == currentDate)
+               .OrderByDescending(x => x.CreatedDate).ToListAsync();
         }
-        public Order GetOrderById(int id)
+        public async Task<Order> GetOrderById(int id)
         {
-            return _context.Orders
+            return await _context.Orders
                               .Where(x => x.Id == id)
-                              .AsNoTracking().FirstOrDefault();
+                              .AsNoTracking().FirstOrDefaultAsync();
         }
 
-        public Order AddOrder(Order objOrder)
+        public async Task<Order> AddOrder(Order objOrder)
         {
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
                 {
-
-                    _context.Orders.Add(objOrder);
-                    _context.SaveChanges();
-                    transaction.Commit();
+                    await _context.Orders.AddAsync(objOrder);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
                 catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    await transaction.RollbackAsync();
                     throw new InvalidOperationException(ex.Message);
                 }
             }
