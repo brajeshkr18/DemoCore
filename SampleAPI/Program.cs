@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using SampleAPI.Entities;
 using SampleAPI.Manager;
 using SampleAPI.Mappings;
@@ -22,7 +23,8 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<SampleApiDbContext>(options => options.UseInMemoryDatabase(databaseName: "SampleDB"));
+builder.Services.AddDbContext<SampleApiDbContext>(options => options.UseInMemoryDatabase(databaseName: "SampleDB").
+ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
 builder.Services.AddTransient<IOrderManager, OrderManager>();
 builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 var app = builder.Build();

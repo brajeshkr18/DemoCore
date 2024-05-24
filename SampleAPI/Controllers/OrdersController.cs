@@ -43,7 +43,6 @@ namespace SampleAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateOrderRequest orderRequest)
         {
             //TODO Need to implement Authentication //Convert.ToInt32(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            orderRequest.CreatedBy = 1;
             var orderDomainModel = _autoMapperProfiles.Map<Order>(orderRequest);
             await _orderManager.AddOrder(orderDomainModel);
             return Ok(_autoMapperProfiles.Map<CreateOrderRequest>(orderDomainModel));
