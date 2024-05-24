@@ -9,6 +9,7 @@ namespace SampleAPI.Mappings
         public AutoMapperProfiles()
         {
             CreateMap<CreateOrderRequest, Order>().ReverseMap();
+            CreateMap<OrderRequestList, Order>().ReverseMap();
         }
     }
 }

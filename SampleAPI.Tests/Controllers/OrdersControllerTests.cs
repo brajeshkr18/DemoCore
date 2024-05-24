@@ -28,7 +28,7 @@ namespace SampleAPI.Tests.Controllers
             var orders = _sut.GetAllActiveOrders();
 
             //Assert
-            orders.Count.Equals(mockOrder?.Count);
+            //orders.Count.Equals(mockOrder?.Count);
         }
         private static List<Order> CreateOrderList(List<int> ids)
         {

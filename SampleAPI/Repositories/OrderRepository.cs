@@ -60,12 +60,15 @@ namespace SampleAPI.Repositories
                     existingOrder.LastUpdateDate = DateTime.Now;
                     _context.Orders.Update(existingOrder);
                     await _context.SaveChangesAsync();
+                    return true;
                 }
+                return false;
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException(ex.Message);
             }
+           
         }
     }
 }

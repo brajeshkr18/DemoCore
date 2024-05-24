@@ -31,7 +31,7 @@ namespace SampleAPI.Controllers
             if (allActiveOrders == null)
                 return NotFound();
 
-            return Ok(_autoMapperProfiles.Map<CreateOrderRequest>(allActiveOrders));
+            return Ok(_autoMapperProfiles.Map<List<OrderRequestList>>(allActiveOrders));
         }
 
         /// TODO: Add an endpoint to allow users to create an order using <see cref="CreateOrderRequest"/>.
