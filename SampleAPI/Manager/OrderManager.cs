@@ -11,22 +11,27 @@ namespace SampleAPI.Manager
         {
             _orderRepository = orderRepository;
         }
-        public List<Order> GetAllActiveOrders()
+        public async Task<List<Order>> GetAllActiveOrders()
         {
-            return _orderRepository.GetAllActiveOrders();
+            return await _orderRepository.GetAllActiveOrders();
         }
-        public List<Order> GetRecentOrders()
+        public async Task<List<Order>> GetRecentOrders()
         {
-            return _orderRepository.GetRecentOrders();
+            return await _orderRepository.GetRecentOrders();
         }
-        public Order GetOrderById(int id)
+        public async Task<Order> GetOrderById(int id)
         {
-            return _orderRepository.GetOrderById(id);
+            return await _orderRepository.GetOrderById(id);
         }
 
-        public Order AddOrder(Order objOrder)
+        public async Task<Order> AddOrder(Order objOrder)
         {
-            return _orderRepository.AddOrder(objOrder);
+            return await _orderRepository.AddOrder(objOrder);
+        }
+
+        public async Task<bool> RemoveOrder(int id, int lastUpdatedBy)
+        {
+            return await _orderRepository.RemoveOrder(id, lastUpdatedBy);
         }
     }
 }

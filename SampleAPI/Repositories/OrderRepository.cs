@@ -47,5 +47,25 @@ namespace SampleAPI.Repositories
             }
             return objOrder;
         }
+
+        public async Task<bool> RemoveOrder(int id, int lastUpdatedBy)
+        {
+            try
+            {
+                var existingOrder = await _context.Orders.FirstOrDefaultAsync(x => x.Id == id);
+                if (existingOrder != null)
+                {
+                    existingOrder.IsDeleted = true;
+                    existingOrder.LastUpdatedBy = lastUpdatedBy;
+                    existingOrder.LastUpdateDate = DateTime.Now;
+                    _context.Orders.Update(existingOrder);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }
+        }
     }
 }

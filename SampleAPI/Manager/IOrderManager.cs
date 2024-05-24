@@ -1,5 +1,4 @@
 ﻿using SampleAPI.Entities;
-using SampleAPI.Requests;
 
 namespace SampleAPI.Manager
 {
@@ -10,10 +9,11 @@ namespace SampleAPI.Manager
         // Suggestions for repo methods:
         // public GetRecentOrders();
         // public AddNewOrder();
-        List<Order> GetAllActiveOrders();
-        List<Order> GetRecentOrders();
-        Order AddOrder(Order objOrder);
-        Order GetOrderById(int id);
+        Task<List<Order>> GetAllActiveOrders();
+        Task<List<Order>> GetRecentOrders();
+        Task<Order> AddOrder(Order objOrder);
+        Task<Order> GetOrderById(int id);
+        Task<bool> RemoveOrder(int id, int lastUpdatedBy);
 
     }
 }
