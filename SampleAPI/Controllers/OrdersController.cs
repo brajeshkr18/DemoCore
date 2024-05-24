@@ -25,16 +25,13 @@ namespace SampleAPI.Controllers
 
         [HttpGet("GetAllActiveOrders")] // TODO: Change route, if needed.
         [ProducesResponseType(StatusCodes.Status200OK)] // TODO: Add all response types
-        public async Task<ActionResult<List<Order>>> GetAllOrders()
+        public async Task<IActionResult> GetAllOrders()
         {
-            return await _orderManager.GetAllActiveOrders();
-        }
+            var allActiveOrders = await _orderManager.GetAllActiveOrders();
+            if (allActiveOrders == null)
+                return NotFound();
 
-        [HttpGet("GetRecentOrders")] // TODO: Change route, if needed.
-        [ProducesResponseType(StatusCodes.Status200OK)] // TODO: Add all response types
-        public async Task<ActionResult<List<Order>>> GetRecentOrders()
-        {
-            return await _orderManager.GetRecentOrders();
+            return Ok(_autoMapperProfiles.Map<CreateOrderRequest>(allActiveOrders));
         }
 
         /// TODO: Add an endpoint to allow users to create an order using <see cref="CreateOrderRequest"/>.
