@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SampleAPI.Entities;
+using SampleAPI.Helper;
 using SampleAPI.Manager;
-using SampleAPI.Mappings;
 using SampleAPI.Requests;
-using System.Security.Claims;
+using System.Runtime.CompilerServices;
 
 namespace SampleAPI.Controllers
 {
@@ -13,50 +12,118 @@ namespace SampleAPI.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderManager _orderManager;
-        private readonly IMapper _autoMapperProfiles;
-
+        private readonly ILogger<OrdersController> _logger;
         // Add more dependencies as needed.
-
-        public OrdersController(IOrderManager orderManager, IMapper autoMapperProfiles)
+        static string GetActualAsyncMethodName([CallerMemberName] string name = null) => name;
+        public OrdersController(IOrderManager orderManager, ILogger<OrdersController> logger)
         {
             _orderManager = orderManager;
-            this._autoMapperProfiles = autoMapperProfiles;
+            this._logger = logger;
         }
-
-        [HttpGet("GetAllActiveOrders")] // TODO: Change route, if needed.
-        [ProducesResponseType(StatusCodes.Status200OK)] // TODO: Add all response types
-        public async Task<IActionResult> GetAllOrders()
+        #region Get Recent Orders
+        [HttpGet("GetRecentOrders")] // TODO: Change route, if needed.
+        public async Task<IActionResult> GetRecentOrders()
         {
-            var allActiveOrders = await _orderManager.GetAllActiveOrders();
-            if (allActiveOrders == null)
-                return NotFound();
+            try
+            {
+                var recentOrders = await _orderManager.GetRecentOrders();
+                if (recentOrders == null || recentOrders.Count == 0)
+                {
+                    return StatusCode(StatusCodes.Status204NoContent, new ResponseJson<List<Order>>().GetNoData(null));
+                }
+                else
+                    return StatusCode(StatusCodes.Status200OK, new ResponseJson<List<Order>>().GetOK(recentOrders));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Start_Time=={DateTime.UtcNow}, Controller={this.GetType().Name},"
+                + $"MethodName={GetActualAsyncMethodName()}, IsException=Yes ReturnObject=StackTrace {ex.StackTrace}, Message {ex.Message}");
 
-            return Ok(_autoMapperProfiles.Map<List<OrderRequestList>>(allActiveOrders));
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseJson<List<Order>>().GetInternalServerError(ex));
+            }
+
         }
-
+        #endregion
         /// TODO: Add an endpoint to allow users to create an order using <see cref="CreateOrderRequest"/>.
 
-        #region Create Remove Order
-
-        [HttpPost]
-        [Route("CreateOrder")]
+        #region Create Order
+        [HttpPost("CreateOrder")]
         public async Task<IActionResult> Create([FromBody] CreateOrderRequest orderRequest)
         {
-            //TODO Need to implement Authentication //Convert.ToInt32(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
-            var orderDomainModel = _autoMapperProfiles.Map<Order>(orderRequest);
-            await _orderManager.AddOrder(orderDomainModel);
-            return Ok(_autoMapperProfiles.Map<CreateOrderRequest>(orderDomainModel));
-        }
+            try
+            {
+                //TODO Need to implement Authentication 
 
-        [HttpPost]
-        [Route("{id}")]
-        public async Task<IActionResult> RemoveOrder([FromRoute] int id)
+                //if we implement Authentication then we can consider created by as
+                //Convert.ToInt32(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+
+                var result = await _orderManager.AddOrder(orderRequest);
+                return StatusCode(StatusCodes.Status200OK, new ResponseJson<Order>().GetOK(result));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Start_Time=={DateTime.UtcNow}, Controller={this.GetType().Name},"
+                + $"MethodName={GetActualAsyncMethodName()}, IsException=Yes ReturnObject=StackTrace {ex.StackTrace}, Message {ex.Message}");
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseJson<List<Order>>().GetInternalServerError(ex));
+            }
+        }
+        #endregion
+
+        #region Delete Order
+        [HttpPost("DeleteOrder")]
+        public async Task<IActionResult> DeleteOrder([FromQuery] int id)
         {
-            var result = await _orderManager.RemoveOrder(id, 1);
-            return Ok(result);
+            try 
+            {
+                //if we implement Authentication then we can consider deleted by as
+                //Convert.ToInt32(User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value);
+
+                var result = await _orderManager.DeleteOrder(id, 1);//set hardcode user as 1
+                if (result)
+                {
+                    return StatusCode(StatusCodes.Status200OK, new ResponseJson<bool>().GetOK(result));
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status204NoContent,false);
+                }
+                
+            }
+            
+            catch (Exception ex)
+            {
+                _logger.LogError($"Start_Time=={DateTime.UtcNow}, Controller={this.GetType().Name},"
+                + $"MethodName={GetActualAsyncMethodName()}, IsException=Yes ReturnObject=StackTrace {ex.StackTrace}, Message {ex.Message}");
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseJson<List<Order>>().GetInternalServerError(ex));
+            }
         }
+        #endregion
 
+        #region Recent Order By Days
+        [HttpGet("GetRecentOrderByDays")]
+        public async Task<IActionResult> GetRecentOrdersByDays(int days)
+        {
+            try
+            {
+                var orders = await _orderManager.GetRecentOrdersByDays(days);
+                if (orders == null || orders.Count == 0)
+                {
+                    return StatusCode(StatusCodes.Status204NoContent, new ResponseJson<List<Order>>().GetNoData(null));
+                }
+                else
+                    return StatusCode(StatusCodes.Status200OK, new ResponseJson<List<Order>>().GetOK(orders));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Start_Time=={DateTime.UtcNow}, Controller={this.GetType().Name},"
+                + $"MethodName={GetActualAsyncMethodName()}, IsException=Yes ReturnObject=StackTrace {ex.StackTrace}, Message {ex.Message}");
 
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseJson<List<Order>>().GetInternalServerError(ex));
+            }
+            
+        }
         #endregion
     }
 }

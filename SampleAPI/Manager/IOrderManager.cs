@@ -1,4 +1,5 @@
 ﻿using SampleAPI.Entities;
+using SampleAPI.Requests;
 
 namespace SampleAPI.Manager
 {
@@ -11,9 +12,10 @@ namespace SampleAPI.Manager
         // public AddNewOrder();
         Task<List<Order>> GetAllActiveOrders();
         Task<List<Order>> GetRecentOrders();
-        Task<Order> AddOrder(Order objOrder);
+        Task<Order> AddOrder(CreateOrderRequest objRequestOrder);
         Task<Order> GetOrderById(int id);
-        Task<bool> RemoveOrder(int id, int lastUpdatedBy);
+        Task<bool> DeleteOrder(int id, int lastUpdatedBy);
+        Task<List<Order>> GetRecentOrdersByDays(int numberOfDays);
 
     }
 }

@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SampleAPI.Entities;
 using SampleAPI.Repositories;
+using SampleAPI.Requests;
 
 namespace SampleAPI.Manager
 {
     public class OrderManager : IOrderManager
     {
-        protected IOrderRepository _orderRepository;
+        private readonly IOrderRepository _orderRepository;
         public OrderManager(IOrderRepository orderRepository)
         {
             _orderRepository = orderRepository;
@@ -24,14 +25,24 @@ namespace SampleAPI.Manager
             return await _orderRepository.GetOrderById(id);
         }
 
-        public async Task<Order> AddOrder(Order objOrder)
+        public async Task<Order> AddOrder(CreateOrderRequest objRequestOrder)
         {
+            var objOrder = new Order()
+            {
+                Name = objRequestOrder.Name,
+                Description = objRequestOrder.Description,
+                CreatedBy = objRequestOrder.CreatedBy,
+            };
             return await _orderRepository.AddOrder(objOrder);
         }
 
-        public async Task<bool> RemoveOrder(int id, int lastUpdatedBy)
+        public async Task<bool> DeleteOrder(int id, int lastUpdatedBy)
         {
-            return await _orderRepository.RemoveOrder(id, lastUpdatedBy);
+            return await _orderRepository.DeleteOrder(id, lastUpdatedBy);
+        }
+        public async Task<List<Order>> GetRecentOrdersByDays(int numberOfDays)
+        {
+            return await _orderRepository.GetRecentOrdersByDays(numberOfDays);
         }
     }
 }

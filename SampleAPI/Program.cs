@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using SampleAPI.Entities;
 using SampleAPI.Manager;
-using SampleAPI.Mappings;
 using SampleAPI.Middlewares;
 using SampleAPI.Repositories;
 using Serilog;
@@ -19,7 +18,6 @@ var logger = new LoggerConfiguration().
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

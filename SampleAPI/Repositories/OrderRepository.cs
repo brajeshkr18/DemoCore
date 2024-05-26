@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using SampleAPI.Entities;
+using SampleAPI.Helper;
 
 namespace SampleAPI.Repositories
 {
@@ -17,9 +19,9 @@ namespace SampleAPI.Repositories
         }
         public async Task<List<Order>> GetRecentOrders()
         {
-            var currentDate = DateTime.Now.Date;
+            var recentOrdersDate = DateTime.Now.Date.AddDays(-1).Date;
             return await _context.Orders.AsNoTracking().
-                Where(x => !x.IsDeleted && x.CreatedDate.Date == currentDate)
+                Where(x => !x.IsDeleted && x.CreatedDate.Date == recentOrdersDate)
                .OrderByDescending(x => x.CreatedDate).ToListAsync();
         }
         public async Task<Order> GetOrderById(int id)
@@ -48,7 +50,7 @@ namespace SampleAPI.Repositories
             return objOrder;
         }
 
-        public async Task<bool> RemoveOrder(int id, int lastUpdatedBy)
+        public async Task<bool> DeleteOrder(int id, int lastUpdatedBy)
         {
             try
             {
@@ -70,5 +72,25 @@ namespace SampleAPI.Repositories
             }
            
         }
+
+        public async Task<List<Order>> GetRecentOrdersByDays(int numberOfDays)
+        {
+            var startDate = DateTime.Today.AddDays(-numberOfDays);
+            var endDate = DateTime.Today;
+
+            // Adjust startDate to include non-working days
+            while (startDate <= endDate)
+            {
+                if (DateHelper.IsWeekend(startDate.DayOfWeek))
+                    startDate = startDate.AddDays(1);
+                else
+                    break;
+            }
+
+            // Query orders within the adjusted date range
+            var orders = _context.Orders.Where(o => !o.IsDeleted && o.CreatedDate >= startDate && o.CreatedDate <= endDate).ToListAsync();
+            return await orders;
+        }
+
     }
 }

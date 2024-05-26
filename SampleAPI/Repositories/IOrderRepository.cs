@@ -13,6 +13,7 @@ namespace SampleAPI.Repositories
         Task<List<Order>> GetRecentOrders();
         Task<Order> AddOrder(Order objOrder);
         Task<Order> GetOrderById(int id);
-        Task<bool> RemoveOrder(int id, int lastUpdatedBy);
+        Task<bool> DeleteOrder(int id, int lastUpdatedBy);
+        Task<List<Order>> GetRecentOrdersByDays(int numberOfDays);
     }
 }

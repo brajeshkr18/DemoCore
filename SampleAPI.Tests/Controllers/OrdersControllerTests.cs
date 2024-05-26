@@ -1,43 +1,81 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
+﻿using Moq;
 using SampleAPI.Entities;
 using SampleAPI.Manager;
 using SampleAPI.Repositories;
+using SampleAPI.Requests;
+using SampleAPI.Tests.Repositories;
+using Assert = Xunit.Assert;
 
 namespace SampleAPI.Tests.Controllers
 {
-    [TestClass()]
     public class OrdersControllerTests
     {
         // TODO: Write controller unit tests
-        private IOrderManager _sut;
-        private readonly IOrderRepository _orderRepository = Substitute.For<IOrderRepository>();
-
-        [TestInitialize]
-        public void Initialize() => _sut = new OrderManager(_orderRepository);
-        [TestMethod]
-        [Fact]
-        public void GetOrder()
+        private readonly Mock<IOrderManager> _serviceMock;
+        private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        public OrdersControllerTests()
         {
-            //Arrange
-            List<int> ids = new() { 1, 2, 3, 4, 5 };
-            var mockOrder = CreateOrderList(ids);
-            _orderRepository.GetAllActiveOrders().Returns(mockOrder);
-
-            //Act
-            var orders = _sut.GetAllActiveOrders();
-
-            //Assert
-            //orders.Count.Equals(mockOrder?.Count);
+            _serviceMock = new Mock<IOrderManager>(MockBehavior.Strict);
+            _orderRepositoryMock = new Mock<IOrderRepository>(MockBehavior.Strict);
         }
-        private static List<Order> CreateOrderList(List<int> ids)
+        [Fact]
+        public async Task GetRecentOrder()
         {
-            List<Order> orders = new();
-            foreach (int id in ids)
-            {
-                orders.Add(new Order() { Id = id, Name = "ABC" + id, LastUpdateDate = DateTime.UtcNow });
-            };
-            return orders;
+            _serviceMock.Setup(x => x.GetAllActiveOrders()).ReturnsAsync(new List<Order>()); // Set up the behavior for GetOrder
+
+            var orderProcessor = new OrderProcessor(_serviceMock.Object);
+
+            // Act
+             List<Order> result =  orderProcessor.GetAllActiveOrders().Result;
+
+            // Assert
+            Assert.Equal(new List<Order>(), result);
+        }
+        [Fact]
+        public async Task CreateOrder()
+        {
+            _serviceMock.Setup(x => x.AddOrder(It.IsAny<CreateOrderRequest>())).ReturnsAsync(new Order()); // Set up the behavior for CreateOrder
+
+            var orderProcessor = new OrderProcessor(_serviceMock.Object);
+
+            // Act
+            var result = orderProcessor.AddOrder(new CreateOrderRequest());
+
+            // Assert
+            Assert.Equal(0, result.Result.Id);
+        }
+
+        [Fact]
+        public async Task DeleteOrder()
+        {
+            _serviceMock.Setup(x => x.DeleteOrder(1,1)).ReturnsAsync(true); // Set up the behavior for delete
+
+            var orderProcessor = new OrderProcessor(_serviceMock.Object);
+
+            // Act
+            bool result = orderProcessor.DeleteOrder(1,1).Result;
+
+            // Assert
+            Assert.Equal(true, result);
+        }
+
+        [Fact]
+        public void GetRecentOrdersByDays()
+        {
+            // Arrange
+
+            var orderService = new OrderManager(_orderRepositoryMock.Object);
+            int days = 5;
+            // Set up mocks and test data
+
+            _serviceMock.Setup(x => x.GetRecentOrdersByDays(days)).ReturnsAsync(new List<Order>());
+
+            var orderProcessor = new OrderProcessor(_serviceMock.Object);
+            // Act
+            var result = orderProcessor.GetRecentOrdersByDays(5).Result;
+
+            // Assert
+            Assert.Equal(new List<Order>(), result);
         }
     }
 }
